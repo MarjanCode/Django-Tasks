@@ -4,5 +4,5 @@
   "build": {
     "location": "iran"
   },
-  "disks": "my-disk"
+  "disks": []
 }
