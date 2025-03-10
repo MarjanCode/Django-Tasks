@@ -1,0 +1,13 @@
+{
+"app":"dm-converter"
+"port":80
+"build":{
+"location":"iran"
+}
+"disks":[
+{
+"name":"my-disk"
+"mountTo":"path/to/folder"
+}
+]
+}
