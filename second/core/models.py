@@ -34,7 +34,7 @@ class Bookings(models.Model):
         ('cancelled', 'Cancelled'),
     ]
         
-    patient = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     date = models.DateField()
     time_slot = models.CharField(max_length=20)

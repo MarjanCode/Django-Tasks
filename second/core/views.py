@@ -112,7 +112,32 @@ class BookAppointmentAPIView(APIView):
                 "message": "Invalid request data.",
                 "errors": serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
+            
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return Response({
+                "success": False,
+                'message': 'Authorization header missing or invalid.'
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
+        token = auth_header.split(' ')[1]
+        payload = decode_jwt_token(token)
+
+        if not payload:
+            return Response({
+                "success": False,
+                'message': 'Invalid or expired token.'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        email = payload.get('email')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({
+                "success": False,
+                "message": "User not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+            
         doctor_id = serializer.validated_data['doctor_id']
         date = serializer.validated_data['date']
         time_slot = serializer.validated_data['time_slot']
@@ -131,7 +156,7 @@ class BookAppointmentAPIView(APIView):
                 "message": "The requested time slot is not available."
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        booking = serializer.save(status='confirmed')
+        booking = serializer.save(user=user, status='confirmed')
 
         # send sms 
         self.send_sms_notification(booking, doctor)

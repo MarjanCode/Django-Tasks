@@ -17,7 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
 class DoctorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Doctor
-        fields = ['id', 'user', 'name', 'specialty', 'available_slots']
+        fields = ['id', 'name', 'specialty', 'available_slots']
 
     def validate_user(self, value):
         if Doctor.objects.filter(user=value).exists():
@@ -26,6 +26,8 @@ class DoctorSerializer(serializers.ModelSerializer):
         
 
 class BookingsSerializer(serializers.ModelSerializer):
+    doctor_id = serializers.IntegerField()
+    
     class Meta:
         model = Bookings
-        fields = ['id', 'doctor_id', 'date', 'time_slot','status', 'phone_number']     
+        fields = ['doctor_id', 'date', 'time_slot','status', 'phone_number']     
