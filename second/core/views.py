@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import jwt
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import check_password
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
