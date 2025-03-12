@@ -1,41 +1,31 @@
 from rest_framework import serializers
-from .models import Patient, Doctor, Bookings 
+from .models import User, Doctor, Bookings
+from django.contrib.auth.hashers import make_password
 
 
-class PatientSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-    
+
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Patient
+        model = User
         fields = ['id', 'email', 'password']
         
     def create(self, validated_data):
-        patient = Patient(email=validated_data['email'], role='patient')
-        patient.set_password(validated_data['password'])
-        patient.save()
-        return patient
+        validated_data['password'] = make_password(validated_data['password'])
+        return super().create(validated_data)
+        
 
 class DoctorSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-
     class Meta:
         model = Doctor
-        fields = ['id', 'email', 'password', 'name', 'specialty', 'available_slots']  
-            
-    def create(self, validated_data):
-        doctor = Doctor(
-            email=validated_data['email'],
-            role='doctor',
-            name=validated_data['name'],
-            specialty=validated_data['specialty']
-        )
-        
-        doctor.set_password(validated_data['password'])
-        doctor.save()
-        return doctor
+        fields = ['id', 'user', 'name', 'specialty', 'available_slots']
+
+    def validate_user(self, value):
+        if Doctor.objects.filter(user=value).exists():
+            raise serializers.ValidationError("This user already has a doctor profile.")
+        return value
         
 
 class BookingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bookings
-        fields = ['id', 'patient', 'doctor', 'booked_slot', 'status']     
+        fields = ['id', 'doctor_id', 'date', 'time_slot','status', 'phone_number']     
