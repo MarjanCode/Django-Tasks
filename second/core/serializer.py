@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Doctor, Bookings
+from .models import User, Doctor, Booking
 from django.contrib.auth.hashers import make_password
 
 
@@ -25,9 +25,9 @@ class DoctorSerializer(serializers.ModelSerializer):
         return value
         
 
-class BookingsSerializer(serializers.ModelSerializer):
+class BookingSerializer(serializers.ModelSerializer):
     doctor_id = serializers.IntegerField()
     
     class Meta:
-        model = Bookings
-        fields = ['doctor_id', 'date', 'time_slot','status', 'phone_number']     
+        model = Booking
+        fields = ['doctor_id', 'date', 'time_slot','status']     

@@ -3,6 +3,7 @@ from django.db import models
 
 class User(models.Model):
     email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=15, null=True)
     password = models.CharField(max_length=128)
 
     class Meta:
@@ -27,7 +28,7 @@ class Doctor(models.Model):
         return f"{self.name} ({self.specialty})"
     
      
-class Bookings(models.Model):
+class Booking(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('confirmed', 'Confirmed'),
@@ -38,11 +39,9 @@ class Bookings(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     date = models.DateField()
     time_slot = models.CharField(max_length=20)
-    phone_number = models.CharField(max_length=15, null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(null=True, blank=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
+        
     class Meta:
         db_table = 'bookings'
     
