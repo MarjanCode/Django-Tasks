@@ -80,7 +80,7 @@ def login(request):
     }, status=status.HTTP_200_OK)
 
 
-class DoctorProfileAPIView(APIView):
+class DoctorProfileAPIView(APIView): 
     def post(self, request):
         user, error_message = get_user_from_token(request)
         if not user:
@@ -103,6 +103,60 @@ class DoctorProfileAPIView(APIView):
             'message': 'Doctor profile created successfully.',
             'doctor_id': serializer.data['id']
         }, status=status.HTTP_201_CREATED)
+    
+    def patch(self, request):
+        user, error_message = get_user_from_token(request)
+        if not user:
+            return Response({
+                'success': False,
+                'message': error_message
+            }, status=status.HTTP_401_UNAUTHORIZED) 
+            
+        try:
+            doctor = Doctor.objects.get(user=user)
+        except Doctor.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Doctor profile not found.'
+            }, status=status.HTTP_404_NOT_FOUND)          
+
+        serializer = DoctorSerializer(doctor, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response({
+                'success': False,
+                'message': 'Invalid data.',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+        return Response({
+            'success': True,
+            'message': 'Doctor profile updated successfully.',
+            'doctor': serializer.data
+        }, status=status.HTTP_200_OK)
+    
+    def delete(self, request):
+        user, error_message = get_user_from_token(request)
+        if not user:
+            return Response({
+                'success': False,
+                'message': error_message
+            }, status=status.HTTP_401_UNAUTHORIZED)
+                            
+        try:
+            doctor = Doctor.objects.get(user=user)
+        except Doctor.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Doctor profile not found.'
+            }, status=status.HTTP_404_NOT_FOUND)
+            
+        doctor.delete()
+        
+        return Response({
+            'success': True,
+            'message': 'Doctor profile deleted successfully.'
+        }, status=status.HTTP_200_OK)
         
     def get(self, request):
         doctors = Doctor.objects.all()
@@ -133,7 +187,14 @@ class BookAppointmentAPIView(APIView):
         doctor_id = serializer.validated_data['doctor_id']
         date = serializer.validated_data['date']
         time_slot = serializer.validated_data['time_slot']
-
+        
+        # if not Doctor.objects.filter(id=doctor_id).exists():
+        #     return Response({
+        #         "success": False,
+        #         "message": "Doctor not found."
+        #     }, status=status.HTTP_404_NOT_FOUND)
+            
+        # If you need the doctor object for further processing:
         try:
             doctor = Doctor.objects.get(id=doctor_id)
         except Doctor.DoesNotExist:
@@ -141,19 +202,115 @@ class BookAppointmentAPIView(APIView):
                 "success": False,
                 "message": "Doctor not found."
             }, status=status.HTTP_404_NOT_FOUND)
-
-        if Booking.objects.filter(doctor_id=doctor_id, date=date, time_slot=time_slot).exists():
+            
+            
+        slot_to_book = {"date": str(date), "time_slot": time_slot}
+        if slot_to_book not in doctor.available_slots:
             return Response({
                 "success": False,
                 "message": "The requested time slot is not available."
             }, status=status.HTTP_400_BAD_REQUEST)
+    
+        doctor.available_slots = [slot for slot in doctor.available_slots if slot != slot_to_book]
+        doctor.save()
 
-        booking = serializer.save(user=user, status='confirmed')
+        # if Booking.objects.filter(doctor_id=doctor_id, date=date, time_slot=time_slot).exists():
+        #     return Response({
+        #         "success": False,
+        #         "message": "The requested time slot is not available."
+        #     }, status=status.HTTP_400_BAD_REQUEST)
+
+        booking = serializer.save(user=user, status='confirmed', doctor=doctor) # added
         return Response({
             "success": True,
             "message": "Booking confirmed!",
             "booking": BookingSerializer(booking).data
         }, status=status.HTTP_201_CREATED)
+    
+    def patch(self, request, booking_id):
+        user, error_message = get_user_from_token(request)
+        if not user:
+            return Response({
+                "success": False,
+                'message': error_message
+            }, status=status.HTTP_401_UNAUTHORIZED)
+            
+        try:
+            booking = Booking.objects.get(id=booking_id, user=user)
+        except Booking.DoesNotExist:
+            return Response({
+                "success": False,
+                "message": "Booking not found or you do not have permission to update it."
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = BookingSerializer(booking, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response({
+                "success": False,
+                "message": "Invalid request data.",
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if 'doctor_id' in request.data:
+            doctor_id = request.data['doctor_id']
+            if not Doctor.objects.filter(id=doctor_id).exists():
+                return Response({
+                    "success": False,
+                    "message": "Doctor not found."
+                }, status=status.HTTP_404_NOT_FOUND)
+                
+        if 'date' in request.data or 'time_slot' in request.data:
+            new_date = request.data.get('date', booking.date)
+            new_time_slot = request.data.get('time_slot', booking.time_slot)
+            new_doctor_id = request.data.get('doctor_id', booking.doctor_id)
+
+            if Booking.objects.filter(doctor_id=new_doctor_id, date=new_date, time_slot=new_time_slot).exclude(id=booking_id).exists():
+                return Response({
+                    "success": False,
+                    "message": "The requested time slot is not available."
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        serializer.save()
+        return Response({
+            "success": True,
+            "message": "Booking updated successfully.",
+            "booking": serializer.data
+        }, status=status.HTTP_200_OK)
+    
+    def delete(self, request, booking_id):
+        user, error_message = get_user_from_token(request)
+        if not user:
+            return Response({
+                "success": False,
+                'message': error_message
+            }, status=status.HTTP_401_UNAUTHORIZED)
+            
+        try:
+            booking  = Booking.objects.get(id=booking_id)
+            is_patient = booking .patient == user
+            is_doctor = Doctor.objects.filter(user=user, id=booking.doctor.id).exists()
+
+            if not (is_patient or is_doctor):
+                return Response({
+                    'success': False, 
+                    'message': 'You do not have permission to delete this appointment.'
+                }, status=status.HTTP_403_FORBIDDEN)
+
+            slot_to_release = {"date": str(booking.date), "time_slot": booking.time_slot}
+            booking.doctor.available_slots.append(slot_to_release)
+            booking.doctor.save()
+        
+            booking .delete()
+            return Response({
+                'success': True,
+                'message': 'Appointment deleted successfully.'
+            }, status=status.HTTP_200_OK)
+         
+        except Booking.DoesNotExist:
+            return Response({
+                'success': False, 
+                'message': 'Appointment not found.'
+            }, status=status.HTTP_404_NOT_FOUND)
     
     def get(self, request):
         bookings = Booking.objects.all()
