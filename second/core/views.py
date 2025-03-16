@@ -22,15 +22,14 @@ def generate_jwt_token(user):
     # token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
     # return token
 
-
 def decode_jwt_token(token):
     try:
-        return jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        return payload, None 
     except jwt.ExpiredSignatureError:
-        return None, 'Token has expired.'
+        return None, "Token has expired."
     except jwt.InvalidTokenError:
-        return None, 'Invalid token.'
-
+        return None, "Invalid token."
 
 def get_user_from_token(request):
     auth_header = request.headers.get('Authorization')
@@ -203,7 +202,9 @@ class BookAppointmentAPIView(APIView):
                 "message": "Doctor not found."
             }, status=status.HTTP_404_NOT_FOUND)
             
-            
+        print("Available slots:", doctor.available_slots)
+        print("Slot to book:", {"date": str(date), "time_slot": time_slot}) 
+           
         slot_to_book = {"date": str(date), "time_slot": time_slot}
         if slot_to_book not in doctor.available_slots:
             return Response({
