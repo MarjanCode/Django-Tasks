@@ -46,5 +46,5 @@ class Booking(models.Model):
         db_table = 'bookings'
     
     def __str__(self):
-        return f"Booking {self.id} - {self.patient.email} with Dr. {self.doctor.name} on {self.date} at {self.time_slot}"
+        return f"Booking {self.id} - {self.user.email} with Dr. {self.doctor.name} on {self.date} at {self.time_slot}"
     

@@ -288,7 +288,7 @@ class BookAppointmentAPIView(APIView):
             
         try:
             booking  = Booking.objects.get(id=booking_id)
-            is_patient = booking .patient == user
+            is_patient = booking .user == user
             is_doctor = Doctor.objects.filter(user=user, id=booking.doctor.id).exists()
 
             if not (is_patient or is_doctor):

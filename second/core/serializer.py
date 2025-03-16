@@ -30,4 +30,4 @@ class BookingSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Booking
-        fields = ['id', 'doctor_id', 'date', 'time_slot','status']     
+        fields = ['id', 'doctor_id', 'date', 'time_slot', 'status']     
