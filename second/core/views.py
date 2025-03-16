@@ -201,9 +201,6 @@ class BookAppointmentAPIView(APIView):
                 "success": False,
                 "message": "Doctor not found."
             }, status=status.HTTP_404_NOT_FOUND)
-            
-        print("Available slots:", doctor.available_slots)
-        print("Slot to book:", {"date": str(date), "time_slot": time_slot}) 
            
         slot_to_book = {"date": str(date), "time_slot": time_slot}
         if slot_to_book not in doctor.available_slots:
