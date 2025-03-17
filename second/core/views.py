@@ -150,7 +150,7 @@ class DoctorProfileAPIView(APIView):
                 'message': 'Doctor profile not found.'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        # **Case 1: Delete whole doctor profile (DELETE /api/v1/doctors/)**
+        # Delete whole doctor profile (DELETE /api/v1/doctors/)
         if doctor_id is None:
             doctor.delete()
             return Response({
@@ -158,7 +158,7 @@ class DoctorProfileAPIView(APIView):
                 'message': 'Doctor profile deleted successfully.'
             }, status=status.HTTP_200_OK)
 
-        # **Case 2: Delete a specific slot (DELETE /api/v1/doctors/<int:doctor_id>/)**
+        # Delete a slot (DELETE /api/v1/doctors/<int:doctor_id>/)
         slot_data = request.data.get("available_slots", [])
         if not slot_data:
             return Response({
