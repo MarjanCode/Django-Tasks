@@ -24,6 +24,8 @@ urlpatterns = [
     path('api/v1/signup/', signup),
     path('api/v1/login/', login),
     path('api/v1/doctors/', DoctorProfileAPIView.as_view()),
-    path('api/v1/appointments/', BookAppointmentAPIView.as_view()),
+    path('api/v1/doctors/<int:doctor_id>/', DoctorProfileAPIView.as_view(), name='delete-slot'),
+    path('api/v1/appointments/', BookAppointmentAPIView.as_view(), name='create-appointment'),
+    path('api/v1/appointments/<int:booking_id>/', BookAppointmentAPIView.as_view(), name='manage-appointment'),
 ]
 

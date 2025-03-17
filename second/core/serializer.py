@@ -23,6 +23,16 @@ class DoctorSerializer(serializers.ModelSerializer):
         if Doctor.objects.filter(user=value).exists():
             raise serializers.ValidationError("This user already has a doctor profile.")
         return value
+    
+    def update(self, instance, validated_data):
+        new_slots = validated_data.pop('available_slots', [])
+        instance.available_slots.extend(new_slots)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        return instance
         
 
 class BookingSerializer(serializers.ModelSerializer):
