@@ -251,8 +251,25 @@ class BookAppointmentAPIView(APIView):
                  "success": False,
                  "message": "The requested time slot is not available."
              }, status=status.HTTP_400_BAD_REQUEST)
+             
+        slot_found = False
+        for slot in doctor.available_slots:
+            if time_slot in slot["slots"]:
+                slot["slots"].remove(time_slot)  
+            doctor.save()  
+            slot_found = True
+            break    
+         
+        if not slot_found:
+            return Response({
+                "success": False,
+                "message": "The selected time slot is not available."
+            }, status=status.HTTP_400_BAD_REQUEST)   
+             
         
-        booking = serializer.save(user=user, status='confirmed', doctor=doctor) # added
+        booking = serializer.save(user=user, status='confirmed', doctor=doctor)
+        # booking = serializer.save(status="Confirmed")
+        
         return Response({
             "success": True,
             "message": "Booking confirmed!",
