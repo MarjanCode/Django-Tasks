@@ -44,6 +44,9 @@ class Booking(models.Model):
         
     class Meta:
         db_table = 'bookings'
+        indexes = [
+            models.Index(fields=['doctor_id', 'date', 'time_slot']),
+        ]
     
     def __str__(self):
         return f"Booking {self.id} - {self.user.email} with Dr. {self.doctor.name} on {self.date} at {self.time_slot}"
