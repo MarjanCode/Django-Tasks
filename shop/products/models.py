@@ -13,7 +13,6 @@ class Product(models.Model):
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=20, choices=STATUS_CHOICES)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    image = models.ImageField(upload_to='product_images/')
     color = models.CharField(max_length=30)
     brand = models.CharField(max_length=50)
     builtin_memory = models.CharField(max_length=50)
@@ -27,11 +26,18 @@ class Product(models.Model):
     def __str__(self):
         return self.name
        
-       
+
+class Image(models.Model):
+    product= models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    image = models.CharField(max_length=255)
+    
+    def __str__(self):
+        return f"Image for {self.product.name}"
+      
 class Review(models.Model):
-    #user= models.OneToOneField(....)
-    product= models.OneToOneField(Product, on_delete=models.CASCADE)
-    text = models.TextField()
+    #user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product= models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
