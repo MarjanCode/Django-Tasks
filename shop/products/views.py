@@ -1,13 +1,18 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 from .models import Product
 from .serializer import ProductSerializer
+from django.shortcuts import get_object_or_404
+
 
 class ProductListView(APIView):
     """
     Get a list of all products and create a new product.
     """
+    permission_classes = [AllowAny]
+    
     def get(self, request):
         products = Product.objects.all()
         serializer = ProductSerializer(products, many=True)
@@ -24,12 +29,10 @@ class ProductDetailView(APIView):
     """
     Get details of a specific product by product_id.
     """
+    permission_classes = [AllowAny]
+    
     def get(self, request, product_id):
-        try:
-            product = Product.objects.get(id=product_id)
-        except Product.DoesNotExist:
-            return Response({"detail": "Product not found."}, status=status.HTTP_404_NOT_FOUND)
-
+        product = get_object_or_404(Product, id=product_id)
         serializer = ProductSerializer(product)
         return Response(serializer.data)
     

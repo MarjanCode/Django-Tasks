@@ -1,4 +1,5 @@
 from django.db import models
+from users.models import User
 
 class Product(models.Model):
     STATUS_CHOICES = [
@@ -39,9 +40,10 @@ class Image(models.Model):
     
     def __str__(self):
         return f"Image for {self.product.name}"
+     
       
 class Review(models.Model):
-    #user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     product= models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
