@@ -23,6 +23,9 @@ class Product(models.Model):
     main_camera = models.CharField(max_length=100)
     front_camera = models.CharField(max_length=100)
     
+    class Meta:
+        db_table = 'products'
+        
     def __str__(self):
         return self.name
        
@@ -30,6 +33,9 @@ class Product(models.Model):
 class Image(models.Model):
     product= models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     image = models.CharField(max_length=255)
+    
+    class Meta:
+        db_table = 'images'
     
     def __str__(self):
         return f"Image for {self.product.name}"
@@ -40,6 +46,9 @@ class Review(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'reviews'
     
     def __str__(self):
         return f"Review for {self.product.name}"
