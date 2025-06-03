@@ -34,5 +34,5 @@ class ProductDetailView(APIView):
     def get(self, request, product_id):
         product = get_object_or_404(Product, id=product_id)
         serializer = ProductSerializer(product)
-        return Response(serializer.data)
+        return Response(serializer.data) 
     
